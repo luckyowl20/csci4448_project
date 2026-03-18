@@ -28,3 +28,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/.idea/
+/.gradle/
+/gradlew
+/gradlew.bat
+/gradle/
+*.iml
