@@ -34,3 +34,4 @@ bin/
 /gradlew.bat
 /gradle/
 *.iml
+/build/
