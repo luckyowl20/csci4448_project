@@ -1,6 +1,5 @@
-package minesweeper;
+package minesweeper.domain.cell;
 
-import minesweeper.domain.cell.Cell;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

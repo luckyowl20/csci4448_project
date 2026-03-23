@@ -1,9 +1,5 @@
-package minesweeper;
+package minesweeper.domain.difficulty;
 
-import minesweeper.domain.difficulty.EasyDifficulty;
-import minesweeper.domain.difficulty.HardDifficulty;
-import minesweeper.domain.difficulty.IDifficulty;
-import minesweeper.domain.difficulty.MediumDifficulty;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
