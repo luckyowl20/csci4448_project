@@ -1,19 +1,32 @@
 package minesweeper.game;
 
-import minesweeper.domain.board.BoardFactory;
 import minesweeper.domain.board.IBoard;
+import minesweeper.domain.board.IBoardFactory;
 import minesweeper.domain.cell.ICell;
 import minesweeper.domain.difficulty.IDifficulty;
 import minesweeper.domain.timer.ITimer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameController {
-    private final BoardFactory boardFactory;
+    private final IBoardFactory boardFactory;
     private final ITimer timer;
+    private final List<GameObserver> observers;
     private IDifficulty currentDifficulty;
     private IBoard currentBoard;
     private GameStatus status;
 
-    public GameController(BoardFactory boardFactory, ITimer timer, IDifficulty defaultDifficulty) {
+    public GameController(IBoardFactory boardFactory, ITimer timer, IDifficulty defaultDifficulty) {
+        this(boardFactory, timer, defaultDifficulty, List.of());
+    }
+
+    public GameController(
+            IBoardFactory boardFactory,
+            ITimer timer,
+            IDifficulty defaultDifficulty,
+            List<GameObserver> observers
+    ) {
         if (boardFactory == null) {
             throw new IllegalArgumentException("Board factory is required.");
         }
@@ -26,6 +39,7 @@ public class GameController {
 
         this.boardFactory = boardFactory;
         this.timer = timer;
+        this.observers = new ArrayList<>(observers == null ? List.of() : observers);
         this.currentDifficulty = defaultDifficulty;
         this.status = GameStatus.NOT_STARTED;
     }
@@ -41,6 +55,7 @@ public class GameController {
 
         currentDifficulty = difficulty;
         currentBoard = boardFactory.createBoard(difficulty);
+        registerObservers(currentBoard);
         timer.reset();
         status = GameStatus.NOT_STARTED;
     }
@@ -101,6 +116,18 @@ public class GameController {
         return currentBoard != null;
     }
 
+    public void addObserver(GameObserver observer) {
+        if (observer == null || observers.contains(observer)) {
+            return;
+        }
+
+        observers.add(observer);
+        if (currentBoard != null) {
+            observer.onGameStarted();
+            currentBoard.addObserver(observer);
+        }
+    }
+
     private boolean isGameOver() {
         return status == GameStatus.WON || status == GameStatus.LOST;
     }
@@ -124,6 +151,13 @@ public class GameController {
     private void ensureActiveBoard() {
         if (currentBoard == null) {
             throw new IllegalStateException("No game has been started.");
+        }
+    }
+
+    private void registerObservers(IBoard board) {
+        for (GameObserver observer : observers) {
+            observer.onGameStarted();
+            board.addObserver(observer);
         }
     }
 }

@@ -21,6 +21,45 @@ This helps to avoid if-else chains and also allows difficulty to be swapped out 
 This decouples the board creation from the rest of the application and also centralizes configuration
 logic in just one place.
 
+## Java Rubric Coverage
+
+### Foundational Classes And Interfaces With Real Logic
+
+- `Board` contains core Minesweeper logic: board initialization, delayed mine placement, adjacent mine counting, recursive safe-cell reveals, win detection, loss detection, and observer notifications.
+- `Cell` manages mutable cell state including whether a cell is mined, revealed, flagged, and how many adjacent mines it has.
+- `GameController` coordinates the application flow by selecting a difficulty, creating boards, starting and stopping the timer, and updating game status.
+- `GameService` translates domain state into API responses for the frontend instead of exposing raw domain objects directly.
+
+### OO Principles In The Code
+
+- Coding to abstractions:
+  - `GameController` depends on `IBoardFactory`, `ITimer`, `IDifficulty`, and `IBoard`.
+  - `Board` stores cells as `ICell[][]` instead of using the concrete `Cell` type everywhere.
+  - The API/service layer reads the game board through `IBoard`.
+- Polymorphism:
+  - `GameController.startNewGame(IDifficulty difficulty)` accepts any implementation of `IDifficulty`.
+  - `EasyDifficulty`, `MediumDifficulty`, and `HardDifficulty` can all be passed in without changing controller logic.
+- Dependency injection:
+  - `GameController` receives its `IBoardFactory`, `ITimer`, default `IDifficulty`, and observers through the constructor.
+  - This allows production code to use `BoardFactory` and `GameTimer`, while tests inject fakes and recording doubles.
+
+### Meaningful Java Test Cases
+
+The project includes more than five meaningful Java tests. Examples:
+
+1. `BoardTest.firstRevealIsAlwaysSafeAndPlacesExactMineCount`
+   Confirms the first clicked cell is safe and the board still places the correct number of mines.
+2. `BoardTest.zeroMineBoardRevealsAllCellsFromFirstClick`
+   Confirms recursive reveal behavior and automatic win detection on an empty board.
+3. `BoardObserverTest.observerTracksFlagRevealAndWinEvents`
+   Confirms the Observer pattern is active and receives real board events.
+4. `GameControllerTest.startNewGameUsesInjectedFactoryAbstraction`
+   Confirms `GameController` uses the injected `IBoardFactory` abstraction rather than constructing boards directly.
+5. `GameControllerTest.observersReceiveBoardEventsAcrossControllerActions`
+   Confirms controller-managed observer registration and event propagation.
+6. `GameTimerTest.testSingletonSameInstance`
+   Confirms the Singleton timer implementation returns the same instance.
+
 ## Current App Structure
 
 - `src/main/java`

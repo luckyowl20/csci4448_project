@@ -76,7 +76,7 @@ public class GameControllerTest {
     }
 
     @Test
-    void getElapsedTimeDelegatestoTimer() {
+    void getElapsedTimeDelegatesToTimer() {
         timer.elapsed = 500;
         assertEquals(500, controller.getElapsedTime());
     }

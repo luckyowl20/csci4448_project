@@ -1,8 +1,10 @@
 <script>
   import { onMount } from 'svelte';
 
+  // where api requests go / api root route
   const API_BASE = 'http://localhost:7070/api';
 
+  // frontend local state derived from java game state returning a JSON of this
   let gameState = {
     selectedDifficulty: 'Easy',
     activeGame: false,
@@ -17,7 +19,12 @@
   let loading = false;
   let errorMessage = '';
 
+  // load the game when the page first loads 
   onMount(loadGameState);
+
+  //
+  // API Routes to send to Java backend and wait on a return call
+  //
 
   async function loadGameState() {
     await callApi('/game');
@@ -95,10 +102,9 @@
   <section class="hero">
     <div>
       <p class="eyebrow">CSCI 4448 Project</p>
-      <h1>Minesweeper UI Prototype</h1>
+      <h1>Minesweeper in Java</h1>
       <p class="lede">
-        This page now talks to a Java backend over HTTP. Difficulty buttons create a new backend
-        game, and cell clicks call the API instead of mutating local-only state.
+        This page is responsible for communicating with the Java backend to run our Minesweeper game.
       </p>
     </div>
     <div class="status-card">

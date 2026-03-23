@@ -5,7 +5,6 @@ import java.util.List;
 import minesweeper.api.dto.CellStateResponse;
 import minesweeper.api.dto.DifficultyOptionResponse;
 import minesweeper.api.dto.GameStateResponse;
-import minesweeper.domain.board.Board;
 import minesweeper.domain.board.IBoard;
 import minesweeper.domain.cell.ICell;
 import minesweeper.domain.difficulty.EasyDifficulty;
@@ -148,7 +147,7 @@ public class GameService {
                 controller.getElapsedTime(),
                 board != null ? board.getRows() : 0,
                 board != null ? board.getCols() : 0,
-                board instanceof Board concreteBoard ? concreteBoard.getMineCount() : 0,
+                board != null ? board.getMineCount() : 0,
                 buildCellResponses(board),
                 buildDifficultyOptions()
         );
