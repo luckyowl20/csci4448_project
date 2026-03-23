@@ -12,6 +12,7 @@ public interface IBoard {
     ICell getCell(int row, int col);
     int getRows();
     int getCols();
+    int getMineCount();
     void addObserver(GameObserver observer);
     void removeObserver(GameObserver observer);
 }
