@@ -26,5 +26,5 @@ java {
 }
 
 application {
-    mainClass = 'GameApiServer'
+    mainClass = 'minesweeper.api.GameApiServer'
 }
