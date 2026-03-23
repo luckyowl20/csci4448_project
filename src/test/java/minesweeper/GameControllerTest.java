@@ -75,6 +75,12 @@ public class GameControllerTest {
         assertFalse(timer.running);
     }
 
+    @Test
+    void getElapsedTimeDelegatestoTimer() {
+        timer.elapsed = 500;
+        assertEquals(500, controller.getElapsedTime());
+    }
+
     private static final class FakeTimer implements ITimer {
         private boolean running;
         private long elapsed;
