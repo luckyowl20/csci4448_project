@@ -6,6 +6,7 @@ import minesweeper.domain.difficulty.EasyDifficulty;
 import minesweeper.domain.difficulty.HardDifficulty;
 import minesweeper.domain.timer.ITimer;
 import minesweeper.game.GameController;
+import minesweeper.game.GameObserver;
 import minesweeper.game.GameStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,6 +82,64 @@ public class GameControllerTest {
         assertEquals(500, controller.getElapsedTime());
     }
 
+    @Test
+    void addObserverCallsOnGameStartedIfBoardExists() {
+        controller.startNewGame();
+        FakeObserver observer = new FakeObserver();
+        controller.addObserver(observer);
+        assertTrue(observer.gameStartedCalled);
+    }
+
+    @Test
+    void addObserverDoesNotCallOnGameStartedIfNoBoardExists() {
+        FakeObserver observer = new FakeObserver();
+        controller.addObserver(observer);
+        assertFalse(observer.gameStartedCalled);
+    }
+
+    @Test
+    void addObserverIgnoresNull() {
+        assertDoesNotThrow(() -> controller.addObserver(null));
+    }
+
+    @Test
+    void addObserverIgnoresDuplicates() {
+        controller.startNewGame();
+        FakeObserver observer = new FakeObserver();
+        controller.addObserver(observer);
+        controller.addObserver(observer);
+        assertEquals(1, observer.gameStartedCount);
+    }
+
+    @Test
+    void defaultOnGameStartedDoesNothing() {
+        GameObserver observer = new GameObserver() {
+            @Override public void onCellRevealed(int row, int col) {}
+            @Override public void onGameWon() {}
+            @Override public void onGameLost() {}
+            @Override public void onFlagPlaced(int row, int col) {}
+            @Override public void onFlagRemoved(int row, int col) {}
+        };
+        assertDoesNotThrow(observer::onGameStarted);
+    }
+
+    private static final class FakeObserver implements GameObserver {
+        boolean gameStartedCalled = false;
+        int gameStartedCount = 0;
+
+        @Override
+        public void onGameStarted() {
+            gameStartedCalled = true;
+            gameStartedCount++;
+        }
+
+        @Override public void onCellRevealed(int row, int col) {}
+        @Override public void onGameWon() {}
+        @Override public void onGameLost() {}
+        @Override public void onFlagPlaced(int row, int col) {}
+        @Override public void onFlagRemoved(int row, int col) {}
+    }
+
     private static final class FakeTimer implements ITimer {
         private boolean running;
         private long elapsed;
@@ -88,26 +147,15 @@ public class GameControllerTest {
         private int stopCalls;
 
         @Override
-        public void start() {
-            running = true;
-        }
+        public void start() { running = true; }
 
         @Override
-        public void stop() {
-            running = false;
-            stopCalls++;
-        }
+        public void stop() { running = false; stopCalls++; }
 
         @Override
-        public void reset() {
-            running = false;
-            elapsed = 0;
-            resetCalls++;
-        }
+        public void reset() { running = false; elapsed = 0; resetCalls++; }
 
         @Override
-        public long getElapsed() {
-            return elapsed;
-        }
+        public long getElapsed() { return elapsed; }
     }
 }
