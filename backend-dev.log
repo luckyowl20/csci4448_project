@@ -1,0 +1,25 @@
+> Task :compileJava UP-TO-DATE
+> Task :processResources NO-SOURCE
+> Task :classes UP-TO-DATE
+
+> Task :run
+14:09:08.900 [main] INFO  io.javalin.Javalin - Starting Javalin ...
+14:09:08.908 [main] INFO  org.eclipse.jetty.server.Server - jetty-12.1.6; built: 2026-01-27T18:53:19.182Z; git: 88ca559572b1c8858b3c5684bb0293fa64e5e90f; jvm 24.0.2+12
+14:09:08.997 [main] INFO  o.e.j.s.DefaultSessionIdManager - Session workerName=node0
+14:09:09.005 [main] INFO  o.e.j.server.handler.ContextHandler - Started oeje10s.ServletContextHandler@6d07a63d{ROOT,/,b=null,a=AVAILABLE,h=oeje10s.SessionHandler@571c5681{STARTED}}
+14:09:09.014 [main] INFO  o.e.j.e.s.ServletContextHandler - Started oeje10s.ServletContextHandler@6d07a63d{ROOT,/,b=null,a=AVAILABLE,h=oeje10s.SessionHandler@571c5681{STARTED}}
+14:09:09.078 [main] INFO  o.e.jetty.server.AbstractConnector - Started oejs.ServerConnector@2fd953a6{HTTP/1.1, (http/1.1)}{0.0.0.0:7070}
+14:09:09.083 [main] INFO  org.eclipse.jetty.server.Server - Started oejs.Server@5f9be66c{STARTING}[12.1.6,sto=0] @179ms
+14:09:09.084 [main] INFO  io.javalin.Javalin - 
+       __                  ___          _____
+      / /___ __   ______ _/ (_)___     /__  /
+ __  / / __ `/ | / / __ `/ / / __ \      / /
+/ /_/ / /_/ /| |/ / /_/ / / / / / /     / /
+\____/\__,_/ |___/\__,_/_/_/_/ /_/     /_/
+
+       https://javalin.io/documentation
+
+14:09:09.084 [main] INFO  io.javalin.Javalin - Javalin started in 671ms \o/
+14:09:09.086 [main] INFO  io.javalin.Javalin - Listening on http://localhost:7070/
+14:09:09.098 [main] INFO  io.javalin.Javalin - You are running Javalin 7.0.1 (released February 28, 2026).
+^C

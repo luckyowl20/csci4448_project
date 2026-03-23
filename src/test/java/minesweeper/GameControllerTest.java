@@ -33,7 +33,6 @@ public class GameControllerTest {
     @Test
     void startNewGameCreatesBoardUsingSelectedDifficulty() {
         controller.startNewGame(new HardDifficulty());
-
         IBoard board = controller.getBoard();
         assertTrue(controller.hasActiveGame());
         assertEquals(GameStatus.NOT_STARTED, controller.getStatus());
@@ -45,9 +44,7 @@ public class GameControllerTest {
     @Test
     void firstFlagDoesNotStartTimerOrGameStatus() {
         controller.startNewGame();
-
         controller.flagCell(0, 0);
-
         assertEquals(GameStatus.NOT_STARTED, controller.getStatus());
         assertFalse(timer.running);
     }
@@ -55,9 +52,7 @@ public class GameControllerTest {
     @Test
     void firstRevealStartsTimerAndGame() {
         controller.startNewGame();
-
         controller.revealCell(0, 0);
-
         assertTrue(timer.running || timer.stopCalls > 0);
         assertNotEquals(GameStatus.NOT_STARTED, controller.getStatus());
     }
@@ -67,9 +62,7 @@ public class GameControllerTest {
         controller.startNewGame();
         IBoard firstBoard = controller.getBoard();
         controller.revealCell(0, 0);
-
         controller.resetGame();
-
         assertNotSame(firstBoard, controller.getBoard());
         assertEquals(GameStatus.NOT_STARTED, controller.getStatus());
         assertEquals(2, timer.resetCalls);
@@ -146,16 +139,9 @@ public class GameControllerTest {
         private int resetCalls;
         private int stopCalls;
 
-        @Override
-        public void start() { running = true; }
-
-        @Override
-        public void stop() { running = false; stopCalls++; }
-
-        @Override
-        public void reset() { running = false; elapsed = 0; resetCalls++; }
-
-        @Override
-        public long getElapsed() { return elapsed; }
+        @Override public void start() { running = true; }
+        @Override public void stop() { running = false; stopCalls++; }
+        @Override public void reset() { running = false; elapsed = 0; resetCalls++; }
+        @Override public long getElapsed() { return elapsed; }
     }
 }
