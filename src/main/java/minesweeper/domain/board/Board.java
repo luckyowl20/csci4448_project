@@ -2,6 +2,7 @@ package minesweeper.domain.board;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import minesweeper.domain.cell.Cell;
 import minesweeper.domain.cell.ICell;
 import minesweeper.game.GameObserver;
@@ -13,6 +14,7 @@ public class Board implements IBoard {
     private ICell[][] cells; // Game board containing all the mines / cells
     private boolean gameWon;
     private boolean gameLost;
+    private boolean minesPlaced;
     private final List<GameObserver> observers = new ArrayList<>();
 
     @Override
@@ -25,6 +27,7 @@ public class Board implements IBoard {
         this.cells = new ICell[rows][cols];
         this.gameWon = false;
         this.gameLost = false;
+        this.minesPlaced = false;
 
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
@@ -42,6 +45,12 @@ public class Board implements IBoard {
             return;
         }
 
+        if (!minesPlaced) {
+            placeMinesExcluding(row, col);
+            calculateAdjacentMineCounts();
+            minesPlaced = true;
+        }
+
         ICell cell = cells[row][col];
         if (cell.isRevealed() || cell.isFlagged()) {
             return;
@@ -54,6 +63,10 @@ public class Board implements IBoard {
             gameLost = true;
             notifyGameLost();
             return;
+        }
+
+        if (cell.getAdjacentMines() == 0) {
+            revealAdjacentSafeCells(row, col);
         }
 
         if (hasWon()) {
@@ -148,6 +161,84 @@ public class Board implements IBoard {
     private void ensureInitialized() {
         if (cells == null) {
             throw new IllegalStateException("Board has not been initialized.");
+        }
+    }
+
+    private void placeMinesExcluding(int safeRow, int safeCol) {
+        int placedMines = 0;
+
+        while (placedMines < mineCount) {
+            int row = ThreadLocalRandom.current().nextInt(rows);
+            int col = ThreadLocalRandom.current().nextInt(cols);
+
+            if ((row == safeRow && col == safeCol) || cells[row][col].isMine()) {
+                continue;
+            }
+
+            cells[row][col].setMine(true);
+            placedMines++;
+        }
+    }
+
+    private void calculateAdjacentMineCounts() {
+        for (int row = 0; row < rows; row++) {
+            for (int col = 0; col < cols; col++) {
+                if (cells[row][col].isMine()) {
+                    continue;
+                }
+
+                cells[row][col].setAdjacentMines(countAdjacentMines(row, col));
+            }
+        }
+    }
+
+    private int countAdjacentMines(int row, int col) {
+        int adjacentMines = 0;
+
+        for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+            for (int colOffset = -1; colOffset <= 1; colOffset++) {
+                if (rowOffset == 0 && colOffset == 0) {
+                    continue;
+                }
+
+                int neighborRow = row + rowOffset;
+                int neighborCol = col + colOffset;
+
+                if (isInBounds(neighborRow, neighborCol) && cells[neighborRow][neighborCol].isMine()) {
+                    adjacentMines++;
+                }
+            }
+        }
+
+        return adjacentMines;
+    }
+
+    private void revealAdjacentSafeCells(int startRow, int startCol) {
+        for (int rowOffset = -1; rowOffset <= 1; rowOffset++) {
+            for (int colOffset = -1; colOffset <= 1; colOffset++) {
+                if (rowOffset == 0 && colOffset == 0) {
+                    continue;
+                }
+
+                int neighborRow = startRow + rowOffset;
+                int neighborCol = startCol + colOffset;
+
+                if (!isInBounds(neighborRow, neighborCol)) {
+                    continue;
+                }
+
+                ICell neighbor = cells[neighborRow][neighborCol];
+                if (neighbor.isMine() || neighbor.isFlagged() || neighbor.isRevealed()) {
+                    continue;
+                }
+
+                neighbor.reveal();
+                notifyCellRevealed(neighborRow, neighborCol);
+
+                if (neighbor.getAdjacentMines() == 0) {
+                    revealAdjacentSafeCells(neighborRow, neighborCol);
+                }
+            }
         }
     }
 
