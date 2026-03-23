@@ -109,6 +109,7 @@ public class Board implements IBoard {
         return cols;
     }
 
+    @Override
     public int getMineCount() {
         return mineCount;
     }
