@@ -2,13 +2,18 @@ package minesweeper;
 
 import minesweeper.domain.board.BoardFactory;
 import minesweeper.domain.board.IBoard;
+import minesweeper.domain.board.IBoardFactory;
 import minesweeper.domain.difficulty.EasyDifficulty;
 import minesweeper.domain.difficulty.HardDifficulty;
+import minesweeper.domain.difficulty.IDifficulty;
 import minesweeper.domain.timer.ITimer;
 import minesweeper.game.GameController;
+import minesweeper.game.GameStatsObserver;
 import minesweeper.game.GameStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,6 +44,17 @@ public class GameControllerTest {
         assertEquals("Hard", controller.getCurrentDifficulty().getName());
         assertEquals(16, board.getRows());
         assertEquals(30, board.getCols());
+    }
+
+    @Test
+    void startNewGameUsesInjectedFactoryAbstraction() {
+        RecordingBoardFactory factory = new RecordingBoardFactory();
+        GameController injectedController = new GameController(factory, timer, new EasyDifficulty());
+
+        injectedController.startNewGame(new HardDifficulty());
+
+        assertSame(factory.createdBoard, injectedController.getBoard());
+        assertEquals("Hard", factory.lastDifficultyName);
     }
 
     @Test
@@ -75,6 +91,29 @@ public class GameControllerTest {
         assertFalse(timer.running);
     }
 
+    @Test
+    void observersReceiveBoardEventsAcrossControllerActions() {
+        GameStatsObserver observer = new GameStatsObserver();
+        GameController observedController = new GameController(
+                new BoardFactory(),
+                timer,
+                new EasyDifficulty(),
+                List.of(observer)
+        );
+        IDifficulty tinyDifficulty = new FixedDifficulty(1, 2, 1, "Tiny");
+
+        observedController.startNewGame(tinyDifficulty);
+        observedController.flagCell(0, 1);
+        observedController.flagCell(0, 1);
+        observedController.revealCell(0, 0);
+
+        assertEquals(1, observer.getFlagsPlaced());
+        assertEquals(1, observer.getFlagsRemoved());
+        assertTrue(observer.getRevealedCells() >= 1);
+        assertTrue(observer.isGameWon());
+        assertFalse(observer.isGameLost());
+    }
+
     private static final class FakeTimer implements ITimer {
         private boolean running;
         private long elapsed;
@@ -102,6 +141,41 @@ public class GameControllerTest {
         @Override
         public long getElapsed() {
             return elapsed;
+        }
+    }
+
+    private static final class RecordingBoardFactory implements IBoardFactory {
+        private IBoard createdBoard;
+        private String lastDifficultyName;
+
+        @Override
+        public IBoard createBoard(IDifficulty difficulty) {
+            lastDifficultyName = difficulty.getName();
+            BoardFactory delegate = new BoardFactory();
+            createdBoard = delegate.createBoard(difficulty);
+            return createdBoard;
+        }
+    }
+
+    private record FixedDifficulty(int rows, int cols, int mineCount, String name) implements IDifficulty {
+        @Override
+        public int getRows() {
+            return rows;
+        }
+
+        @Override
+        public int getCols() {
+            return cols;
+        }
+
+        @Override
+        public int getMineCount() {
+            return mineCount;
+        }
+
+        @Override
+        public String getName() {
+            return name;
         }
     }
 }

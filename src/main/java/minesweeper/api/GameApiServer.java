@@ -9,6 +9,7 @@ import minesweeper.domain.board.BoardFactory;
 import minesweeper.domain.difficulty.EasyDifficulty;
 import minesweeper.domain.timer.GameTimer;
 import minesweeper.game.GameController;
+import minesweeper.game.GameStatsObserver;
 
 /**
  * Bootstraps the HTTP API for the Minesweeper application.
@@ -37,7 +38,12 @@ public class GameApiServer {
      */
     public static void main(String[] args) {
         GameService gameService = new GameService(
-                new GameController(new BoardFactory(), GameTimer.INSTANCE, new EasyDifficulty())
+                new GameController(
+                        new BoardFactory(),
+                        GameTimer.INSTANCE,
+                        new EasyDifficulty(),
+                        java.util.List.of(new GameStatsObserver())
+                )
         );
 
         Javalin.start(config -> {
