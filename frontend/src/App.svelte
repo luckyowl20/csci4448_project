@@ -164,11 +164,10 @@
 
     <div class="difficulty-meta">
       <span>{gameState.rows || '-'}x{gameState.cols || '-'}</span>
-      <span>{gameState.mineCount} mines</span>
-    </div>
+      <span>💣 {gameState.mineCount - gameState.cells.filter(c => c.flagged).length} left</span>    </div>
 
     <button class="reset-button" on:click={resetGame} disabled={!gameState.activeGame || loading}>
-      Reset Current Game
+      Start New Game
     </button>
   </section>
 
@@ -206,4 +205,18 @@
       </div>
     {/if}
   </section>
+  {#if gameState.status === 'WON' || gameState.status === 'LOST'}
+    <div class="overlay">
+      <div class="overlay-card">
+        {#if gameState.status === 'WON'}
+          <h2>🏆 You Won!</h2>
+          <p>Completed in {gameState.elapsedTime}s on {gameState.selectedDifficulty} Difficulty</p>
+        {:else}
+          <h2>💥 Game Over</h2>
+          <p>Better luck next time!</p>
+        {/if}
+        <button class="overlay-btn" on:click={resetGame}>Play Again</button>
+      </div>
+    </div>
+  {/if}
 </main>
