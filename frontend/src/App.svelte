@@ -18,6 +18,7 @@
   };
   let loading = false;
   let errorMessage = '';
+  let timerInterval;
 
   // load the game when the page first loads 
   onMount(loadGameState);
@@ -28,6 +29,19 @@
 
   async function loadGameState() {
     await callApi('/game');
+  }
+
+  async function pollTimer() {
+    try {
+      const response = await fetch(`${API_BASE}/game`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        gameState = data;
+      }
+    } catch {
+    }
   }
 
   async function startGame(difficulty) {
@@ -42,60 +56,73 @@
   }
 
   async function revealCell(cell) {
-    if (!gameState.activeGame) {
-      return;
-    }
-
-    await callApi('/game/reveal', {
-      method: 'POST',
-      body: JSON.stringify({ row: cell.row, col: cell.col })
-    });
+    if (!gameState.activeGame) return;
+    try {
+      const response = await fetch(`${API_BASE}/game/reveal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row: cell.row, col: cell.col })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        gameState = data;
+        updateTimerInterval();
+      }
+    } catch {}
   }
 
   async function toggleFlag(cell) {
-    if (!gameState.activeGame) {
-      return;
-    }
-
-    await callApi('/game/flag', {
-      method: 'POST',
-      body: JSON.stringify({ row: cell.row, col: cell.col })
-    });
+    if (!gameState.activeGame) return;
+    try {
+      const response = await fetch(`${API_BASE}/game/flag`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row: cell.row, col: cell.col })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        gameState = data;
+        updateTimerInterval();
+      }
+    } catch {}
   }
 
   async function callApi(path, options = {}) {
     loading = true;
     errorMessage = '';
-
     try {
       const response = await fetch(`${API_BASE}${path}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         ...options
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message ?? 'Request failed.');
       }
-
       gameState = data;
+      updateTimerInterval();
     } catch (error) {
       errorMessage = error.message;
     } finally {
       loading = false;
     }
   }
+
+  function updateTimerInterval() {
+    clearInterval(timerInterval);
+    if (gameState.status === 'IN_PROGRESS') {
+      timerInterval = setInterval(pollTimer, 1000);
+    }
+  }
 </script>
 
 <svelte:head>
-  <title>Minesweeper Prototype</title>
+  <title>Minesweeper</title>
   <meta
     name="description"
     content="Minimal Svelte UI shell for a Java-backed Minesweeper project."
   />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💣</text></svg>" />
 </svelte:head>
 
 <main class="app-shell">
@@ -104,15 +131,29 @@
       <p class="eyebrow">CSCI 4448 Project</p>
       <h1>Minesweeper in Java</h1>
       <p class="lede">
-        This page is responsible for communicating with the Java backend to run our Minesweeper game.
+        A full-stack Minesweeper implementation using Java, OOP design patterns, and a Svelte frontend.
       </p>
     </div>
     <div class="status-card">
       <span class="status-label">Status</span>
-      <strong>{gameState.activeGame ? gameState.status : 'WAITING_TO_START'}</strong>
+      <strong>
+        {#if gameState.status === 'NOT_STARTED' && !gameState.activeGame}
+          🎮 Ready to Play
+        {:else if gameState.status === 'NOT_STARTED'}
+          🎮 Ready
+        {:else if gameState.status === 'IN_PROGRESS'}
+          🎮 In Progress
+        {:else if gameState.status === 'WON'}
+          🏆 You Won!
+        {:else if gameState.status === 'LOST'}
+          💥 Game Over
+        {/if}
+      </strong>
       <p>
         Difficulty: {gameState.selectedDifficulty} <br />
-        Timer: {gameState.elapsedTime}s
+        {#if gameState.status === 'IN_PROGRESS' || gameState.status === 'WON' || gameState.status === 'LOST'}
+          Timer: {gameState.elapsedTime}s
+        {/if}
       </p>
       {#if errorMessage}
         <p class="error-text">{errorMessage}</p>
@@ -138,19 +179,21 @@
 
     <div class="difficulty-meta">
       <span>{gameState.rows || '-'}x{gameState.cols || '-'}</span>
-      <span>{gameState.mineCount} mines</span>
+      <span>💣 {gameState.mineCount} mines</span>
+      <span>🚩 {gameState.cells.filter(c => c.flagged).length}/{gameState.mineCount} flagged</span>
     </div>
 
     <button class="reset-button" on:click={resetGame} disabled={!gameState.activeGame || loading}>
-      Reset Current Game
+      Start New Game
     </button>
   </section>
 
   <section class="board-panel">
     {#if gameState.activeGame}
       <div
-        class="board"
-        style:grid-template-columns={`repeat(${gameState.cols}, minmax(0, 1fr))`}
+              class="board"
+              style:grid-template-columns={`repeat(${gameState.cols}, minmax(0, 1fr))`}
+              style:max-width={`${gameState.cols * 42}px`}
       >
         {#each gameState.cells as cell}
           <button
@@ -163,9 +206,11 @@
             disabled={loading}
           >
             {#if cell.flagged}
-              F
+              🚩
+            {:else if cell.revealed && cell.mine && gameState.status === 'LOST'}
+              💥
             {:else if cell.revealed}
-              {cell.adjacentMines}
+              <span class="num-{cell.adjacentMines}">{cell.adjacentMines === 0 ? '' : cell.adjacentMines}</span>
             {/if}
           </button>
         {/each}
@@ -177,4 +222,18 @@
       </div>
     {/if}
   </section>
+  {#if gameState.status === 'WON' || gameState.status === 'LOST'}
+    <div class="overlay">
+      <div class="overlay-card">
+        {#if gameState.status === 'WON'}
+          <h2>🏆 You Won!</h2>
+          <p>Completed in {gameState.elapsedTime}s on {gameState.selectedDifficulty} Difficulty</p>
+        {:else}
+          <h2>💥 Game Over</h2>
+          <p>Better luck next time!</p>
+        {/if}
+        <button class="overlay-btn" on:click={resetGame}>Play Again</button>
+      </div>
+    </div>
+  {/if}
 </main>
