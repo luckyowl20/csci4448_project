@@ -176,7 +176,8 @@ public class GameService {
                         col,
                         cell.isRevealed(),
                         cell.isFlagged(),
-                        cell.getAdjacentMines()
+                        cell.getAdjacentMines(),
+                        cell.isMine()
                 ));
             }
         }

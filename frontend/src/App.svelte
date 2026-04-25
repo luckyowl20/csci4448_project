@@ -163,9 +163,11 @@
             disabled={loading}
           >
             {#if cell.flagged}
-              F
+              🚩
+            {:else if cell.revealed && cell.mine && gameState.status === 'LOST'}
+              💥
             {:else if cell.revealed}
-              {cell.adjacentMines}
+              {cell.adjacentMines === 0 ? '' : cell.adjacentMines}
             {/if}
           </button>
         {/each}

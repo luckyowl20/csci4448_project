@@ -5,6 +5,7 @@ public record CellStateResponse(
         int col,
         boolean revealed,
         boolean flagged,
-        int adjacentMines
+        int adjacentMines,
+        boolean mine
 ) {
 }
