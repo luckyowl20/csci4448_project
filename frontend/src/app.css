@@ -159,16 +159,18 @@ h1 {
 
 .board {
   display: grid;
-  gap: 0.32rem;
+  gap: 0.25rem;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .cell {
-  min-height: 2.1rem;
-  border-radius: 0.55rem;
+  aspect-ratio: 1;
+  border-radius: 0.45rem;
   background: #526d44;
   color: #f8f6f0;
-  font-size: 0.76rem;
-  padding: 0.25rem;
+  font-size: 1rem;
+  padding: 0;
 }
 
 .cell:hover {

@@ -149,8 +149,9 @@
   <section class="board-panel">
     {#if gameState.activeGame}
       <div
-        class="board"
-        style:grid-template-columns={`repeat(${gameState.cols}, minmax(0, 1fr))`}
+              class="board"
+              style:grid-template-columns={`repeat(${gameState.cols}, minmax(0, 1fr))`}
+              style:max-width={`${gameState.cols * 42}px`}
       >
         {#each gameState.cells as cell}
           <button
