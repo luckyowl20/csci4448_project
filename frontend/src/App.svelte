@@ -130,15 +130,29 @@
       <p class="eyebrow">CSCI 4448 Project</p>
       <h1>Minesweeper in Java</h1>
       <p class="lede">
-        This page is responsible for communicating with the Java backend to run our Minesweeper game.
+        A full-stack Minesweeper implementation using Java, OOP design patterns, and a Svelte frontend.
       </p>
     </div>
     <div class="status-card">
       <span class="status-label">Status</span>
-      <strong>{gameState.activeGame ? gameState.status : 'WAITING_TO_START'}</strong>
+      <strong>
+        {#if gameState.status === 'NOT_STARTED' && !gameState.activeGame}
+          🎮 Ready to Play
+        {:else if gameState.status === 'NOT_STARTED'}
+          🎮 Ready
+        {:else if gameState.status === 'IN_PROGRESS'}
+          🎮 In Progress
+        {:else if gameState.status === 'WON'}
+          🏆 You Won!
+        {:else if gameState.status === 'LOST'}
+          💥 Game Over
+        {/if}
+      </strong>
       <p>
         Difficulty: {gameState.selectedDifficulty} <br />
-        Timer: {gameState.elapsedTime}s
+        {#if gameState.status === 'IN_PROGRESS' || gameState.status === 'WON' || gameState.status === 'LOST'}
+          Timer: {gameState.elapsedTime}s
+        {/if}
       </p>
       {#if errorMessage}
         <p class="error-text">{errorMessage}</p>
