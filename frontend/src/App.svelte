@@ -18,6 +18,7 @@
   };
   let loading = false;
   let errorMessage = '';
+  let timerInterval;
 
   // load the game when the page first loads 
   onMount(loadGameState);
@@ -28,6 +29,19 @@
 
   async function loadGameState() {
     await callApi('/game');
+  }
+
+  async function pollTimer() {
+    try {
+      const response = await fetch(`${API_BASE}/game`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        gameState = data;
+      }
+    } catch {
+    }
   }
 
   async function startGame(difficulty) {
@@ -42,25 +56,29 @@
   }
 
   async function revealCell(cell) {
-    if (!gameState.activeGame) {
-      return;
-    }
-
-    await callApi('/game/reveal', {
-      method: 'POST',
-      body: JSON.stringify({ row: cell.row, col: cell.col })
-    });
+    if (!gameState.activeGame) return;
+    try {
+      const response = await fetch(`${API_BASE}/game/reveal`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row: cell.row, col: cell.col })
+      });
+      const data = await response.json();
+      if (response.ok) gameState = data;
+    } catch {}
   }
 
   async function toggleFlag(cell) {
-    if (!gameState.activeGame) {
-      return;
-    }
-
-    await callApi('/game/flag', {
-      method: 'POST',
-      body: JSON.stringify({ row: cell.row, col: cell.col })
-    });
+    if (!gameState.activeGame) return;
+    try {
+      const response = await fetch(`${API_BASE}/game/flag`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ row: cell.row, col: cell.col })
+      });
+      const data = await response.json();
+      if (response.ok) gameState = data;
+    } catch {}
   }
 
   async function callApi(path, options = {}) {
@@ -82,6 +100,12 @@
       }
 
       gameState = data;
+
+      clearInterval(timerInterval);
+      if (gameState.status === 'IN_PROGRESS') {
+        timerInterval = setInterval(pollTimer, 1000);
+      }
+
     } catch (error) {
       errorMessage = error.message;
     } finally {
