@@ -64,7 +64,10 @@
         body: JSON.stringify({ row: cell.row, col: cell.col })
       });
       const data = await response.json();
-      if (response.ok) gameState = data;
+      if (response.ok) {
+        gameState = data;
+        updateTimerInterval();
+      }
     } catch {}
   }
 
@@ -77,39 +80,38 @@
         body: JSON.stringify({ row: cell.row, col: cell.col })
       });
       const data = await response.json();
-      if (response.ok) gameState = data;
+      if (response.ok) {
+        gameState = data;
+        updateTimerInterval();
+      }
     } catch {}
   }
 
   async function callApi(path, options = {}) {
     loading = true;
     errorMessage = '';
-
     try {
       const response = await fetch(`${API_BASE}${path}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         ...options
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message ?? 'Request failed.');
       }
-
       gameState = data;
-
-      clearInterval(timerInterval);
-      if (gameState.status === 'IN_PROGRESS') {
-        timerInterval = setInterval(pollTimer, 1000);
-      }
-
+      updateTimerInterval();
     } catch (error) {
       errorMessage = error.message;
     } finally {
       loading = false;
+    }
+  }
+
+  function updateTimerInterval() {
+    clearInterval(timerInterval);
+    if (gameState.status === 'IN_PROGRESS') {
+      timerInterval = setInterval(pollTimer, 1000);
     }
   }
 </script>
@@ -192,7 +194,7 @@
             {:else if cell.revealed && cell.mine && gameState.status === 'LOST'}
               💥
             {:else if cell.revealed}
-              {cell.adjacentMines === 0 ? '' : cell.adjacentMines}
+              <span class="num-{cell.adjacentMines}">{cell.adjacentMines === 0 ? '' : cell.adjacentMines}</span>
             {/if}
           </button>
         {/each}
