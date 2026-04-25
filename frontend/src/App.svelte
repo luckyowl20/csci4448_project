@@ -117,7 +117,7 @@
 </script>
 
 <svelte:head>
-  <title>Minesweeper Prototype</title>
+  <title>Minesweeper</title>
   <meta
     name="description"
     content="Minimal Svelte UI shell for a Java-backed Minesweeper project."
@@ -178,7 +178,9 @@
 
     <div class="difficulty-meta">
       <span>{gameState.rows || '-'}x{gameState.cols || '-'}</span>
-      <span>💣 {gameState.mineCount - gameState.cells.filter(c => c.flagged).length} left</span>    </div>
+      <span>💣 {gameState.mineCount} mines</span>
+      <span>🚩 {gameState.cells.filter(c => c.flagged).length}/{gameState.mineCount} flagged</span>
+    </div>
 
     <button class="reset-button" on:click={resetGame} disabled={!gameState.activeGame || loading}>
       Start New Game
